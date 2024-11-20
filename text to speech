@@ -1,0 +1,45 @@
+import cohere
+import streamlit as st
+from gtts import gTTS
+import io
+
+# Initialize the Cohere API client
+API_KEY = "RzWMNercdb7YX2sEYlJwetX5jHWINcBmX0PSN2Sm"  # Replace with your actual Cohere API key
+co = cohere.Client(API_KEY)
+
+# Function for text-to-speech synthesis
+def text_to_speech_with_cohere(text):
+    try:
+        # Generate a speech-like response using Cohere
+        response = co.generate(
+            model="command-xlarge-nightly",
+            prompt=f"Convert the following text into natural speech: '{text}'",
+            max_tokens=50,
+            temperature=0.7
+        )
+        generated_text = response.generations[0].text.strip()
+
+        # Use gTTS for creating a speech audio file
+        tts = gTTS(text=generated_text, lang='en')
+        audio = io.BytesIO()
+        tts.write_to_fp(audio)
+        audio.seek(0)
+        return audio
+    except Exception as e:
+        return f"Error: {e}"
+
+# Streamlit UI
+st.title("Text-to-Speech with Cohere")
+st.text_input("Enter Text", key="input_text")
+input_text = st.session_state.input_text
+
+if st.button("Generate Speech"):
+    if input_text.strip():
+        with st.spinner("Generating speech..."):
+            audio_file = text_to_speech_with_cohere(input_text)
+            if isinstance(audio_file, io.BytesIO):
+                st.audio(audio_file, format="audio/mp3", start_time=0)
+            else:
+                st.error(audio_file)
+    else:
+        st.error("Please enter some text.")
