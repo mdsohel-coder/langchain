@@ -1,1 +1,36 @@
+import cohere
+import streamlit as st
 
+# Initialize Cohere Client
+API_KEY = "ifVOuI9kTMtvhwXmfSQCNDTAm1cqq5OUgEwI0wP9"  # Replace with your actual Cohere API key
+cohere_client = cohere.Client(API_KEY)
+
+# Function to summarize text using Cohere
+def summarize_text(input_text):
+    response = cohere_client.generate(
+        model="command-xlarge-nightly",  # Choose the Cohere model
+        prompt=f"Summarize the following text:\n\n{input_text}\n\nSummary:",
+        max_tokens=100,  # Adjust the maximum length of the summary
+        temperature=0.5,  # Control creativity/randomness
+        stop_sequences=["\n"]  # Stop generation after this sequence
+    )
+    return response.generations[0].text.strip()  # Extract and clean the summary
+
+# Streamlit App
+st.set_page_config(page_title="Text Summarization with Cohere")
+st.header("Text Summarization with Cohere")
+
+# Input text for summarization
+input_text = st.text_area("Enter the text to summarize:", height=200)
+
+# Summarize Button
+if st.button("Summarize"):
+    if input_text.strip():  # Check if input is not empty
+        try:
+            summary = summarize_text(input_text)
+            st.subheader("Summary:")
+            st.write(summary)
+        except Exception as e:
+            st.error(f"Error: {e}")
+    else:
+        st.warning("Please enter some text to summarize.")
