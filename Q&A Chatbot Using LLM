@@ -1,0 +1,37 @@
+# Q&A Chatbot using Cohere
+import cohere
+import streamlit as st
+
+# Initialize Cohere Client
+API_KEY = "ifVOuI9kTMtvhwXmfSQCNDTAm1cqq5OUgEwI0wP9"  # Replace with your Cohere API key
+cohere_client = cohere.Client(API_KEY)
+
+# Function to get response from Cohere
+def get_cohere_response(question):
+    response = cohere_client.generate(
+        model="command-xlarge-nightly",  # Use the appropriate model
+        prompt=question,
+        max_tokens=100,  # Adjust based on your desired response length
+        temperature=0.5,  # Adjust creativity level
+    )
+    return response.generations[0].text.strip()  # Extract and return the generated text
+
+# Initialize Streamlit App
+st.set_page_config(page_title="Q&A Demo")
+
+st.header("Langchain Application with Cohere")
+
+# Input Section
+input_text = st.text_input("Input: ", key="input")
+
+# Submit Button
+submit = st.button("Ask the question")
+
+# If the button is clicked
+if submit and input_text.strip():
+    st.subheader("The Response is")
+    try:
+        response = get_cohere_response(input_text)
+        st.write(response)
+    except Exception as e:
+        st.write(f"Error: {e}")
